@@ -1,0 +1,22 @@
+export const COLORS = {
+    red: '#D81B60',
+    blue: '#1E88E5',
+    yellow: '#FFC107',
+    green: '#01463A',
+    grey: '#DADADA',
+    // addon colors
+    purple: '#9C27B0',
+    orange: '#FF9800',
+    teal: '#00BCD4',
+    pink: '#FF4081',
+    brown: '#795548',
+    lime: '#CDDC39',
+    navy: '#000080',
+    mint: '#98FB98',
+    maroon: '#800000',
+    olive: '#808000',
+    salmon: '#FA8072',
+    violet: '#8A2BE2',
+    coral: '#FF7F50',
+    indigo: '#3F51B5',
+  } as const;
