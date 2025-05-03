@@ -68,32 +68,49 @@ const flatteners = {
     const results: Record<string, number | boolean | string>[] = [];
     const { index, trialNumber, start, end, duration, type, name } = item;
     const { solution, solved, slots, colors, skipped, timeLeft, guesses } = item.responseData;
-    
-    guesses.forEach((guess, guessIdx) => {
-      results.push({
-        trialIndex: index,
-        trialNumber,
-        trialStart: start,
-        trialEnd: end,
-        trialDuration: duration,
-        trialType: type,
-        trialName: name,
-        solution: solution.join(','),
-        solved,
-        slots,
-        colors,
-        skipped,
-        timeLeft,
-        guessIndex: guessIdx,
-        guessStart: guess.start,
-        guessEnd: guess.end,
-        guessDuration: guess.duration,
-        isCorrect: guess.isCorrect,
-        guessColors: guess.colors.join(','),
-        resultStatuses: guess.results.map((r: any) => r.status).join(',')
+
+    const baseData = {
+      trialIndex: index,
+      trialNumber,
+      trialStart: start,
+      trialEnd: end,
+      trialDuration: duration,
+      trialType: type,
+      trialName: name,
+      solution: solution.join(','),
+      solved,
+      slots,
+      colors,
+      skipped,
+      timeLeft,
+    };
+
+    if (guesses?.length) {
+      guesses.forEach((guess, guessIdx) => {
+        results.push({
+          ...baseData,
+          guessIndex: guessIdx,
+          guessStart: guess.start,
+          guessEnd: guess.end,
+          guessDuration: guess.duration,
+          isCorrect: guess.isCorrect,
+          guessColors: guess.colors.join(','),
+          resultStatuses: guess.results.map((r: any) => r.status).join(','),
+        });
       });
-    });
-    
+    } else {
+      results.push({
+        ...baseData,
+        guessIndex: '',
+        guessStart: '',
+        guessEnd: '',
+        guessDuration: '',
+        isCorrect: '',
+        guessColors: '',
+        resultStatuses: '',
+      });
+    }
+
     return results;
   },
 };
