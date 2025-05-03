@@ -59,8 +59,8 @@
     "package:mac": "electron-vite build && electron-builder --mac"
   },
   "dependencies": {
+    "@adriansteffan/reactive": "0.0.31",
     "@adriansteffan/immersive-mode": "0.0.1",
-    "@adriansteffan/reactive": "^0.0.30",
     "@capacitor/android": "^7.0.1",
     "@capacitor/core": "^7.0.1",
     "@capacitor/filesystem": "^7.0.0",

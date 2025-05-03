@@ -328,6 +328,8 @@ export function MasterMindle({
       solution: solution,
       solved: accumulatedGuesses.some((guess: GuessData) => guess.isCorrect),
       skipped: skipped,
+      colors: colors,
+      slots: slots,
       timeLeft: timeLeft,
       guesses: accumulatedGuesses,
     });

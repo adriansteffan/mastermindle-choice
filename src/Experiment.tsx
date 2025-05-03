@@ -5,6 +5,7 @@ import {
   getParam,
   registerArrayExtensions,
   subsetExperimentByParam,
+  TrialData,
 } from '@adriansteffan/reactive';
 import { MasterMindle } from './mastermindle';
 import { COLORS } from './common';
@@ -61,6 +62,41 @@ const PRACTICE_SLOTS_2 = getParam(
   'number',
   'Number of slots for the second practice run',
 );
+
+const flatteners = {
+  MasterMindle: (item: TrialData) => {
+    const results: Record<string, number | boolean | string>[] = [];
+    const { index, trialNumber, start, end, duration, type, name } = item;
+    const { solution, solved, slots, colors, skipped, timeLeft, guesses } = item.responseData;
+    
+    guesses.forEach((guess, guessIdx) => {
+      results.push({
+        trialIndex: index,
+        trialNumber,
+        trialStart: start,
+        trialEnd: end,
+        trialDuration: duration,
+        trialType: type,
+        trialName: name,
+        solution: solution.join(','),
+        solved,
+        slots,
+        colors,
+        skipped,
+        timeLeft,
+        guessIndex: guessIdx,
+        guessStart: guess.start,
+        guessEnd: guess.end,
+        guessDuration: guess.duration,
+        isCorrect: guess.isCorrect,
+        guessColors: guess.colors.join(','),
+        resultStatuses: guess.results.map((r: any) => r.status).join(',')
+      });
+    });
+    
+    return results;
+  },
+};
 
 const experiment = subsetExperimentByParam([
   {
@@ -241,10 +277,11 @@ const experiment = subsetExperimentByParam([
           {
             name: 'MasterMindleSettings',
             type: 'StoreUI',
-            description:
-              'You are free to adjust the difficulty of the game by increading or decreating the number of slots and/or the number of colors!',
+
             props: {
-              title: 'MasterMindle Settings',
+              title: 'Adjust your game!',
+              description:
+                'You are free to adjust the difficulty of the game by increading or decreating the number of slots and/or the number of colors!',
               fields: [
                 {
                   type: 'integer',
@@ -309,20 +346,23 @@ const experiment = subsetExperimentByParam([
           return sessionInfo;
         },
       },
-      trialCSVBuilders: [
-        {
-          filename: `_TRIALMM__${Date.now()}`,
-          trials: ['MasterMindlePractice1', 'MasterMindlePractice2'],
-        },
-        {
-          filename: `_MM__${Date.now()}`,
-          trials: ['MasterMindle'],
-        },
-        {
-          filename: `_SETTINGS__${Date.now()}`,
-          trials: ['MasterMindleSettings'],
-        },
-      ],
+      trialCSVBuilder: {
+        flatteners: flatteners,
+        builders: [
+          {
+            filename: `_TRIALMM__${Date.now()}`,
+            trials: ['MasterMindlePractice1', 'MasterMindlePractice2'],
+          },
+          {
+            filename: `_MM__${Date.now()}`,
+            trials: ['MasterMindle'],
+          },
+          {
+            filename: `_SETTINGS__${Date.now()}`,
+            trials: ['MasterMindleSettings'],
+          },
+        ],
+      },
     },
   },
   {
@@ -333,11 +373,5 @@ const experiment = subsetExperimentByParam([
 ]);
 
 export default function Experiment() {
-  return (
-    <ExperimentRunner
-      config={config}
-      timeline={experiment}
-      components={{ MasterMindle }}
-    />
-  );
+  return <ExperimentRunner config={config} timeline={experiment} components={{ MasterMindle }} />;
 }
