@@ -130,6 +130,7 @@ export function MasterMindle({
   maxGuesses,
   slots = 4,
   colors = 4,
+  keepCorrect = true,
 }: {
   feedback: Feedback;
   timelimit: number;
@@ -137,6 +138,7 @@ export function MasterMindle({
   maxGuesses: number;
   slots?: number;
   colors?: number;
+  keepCorrect?: boolean;
 } & BaseComponentProps) {
   // Get available colors (excluding grey)
   const availableColors = Object.keys(COLORS)
@@ -319,7 +321,22 @@ export function MasterMindle({
       setRoundOver(true);
     }
 
-    setCurrentGuess(Array(slots).fill(null));
+    if (
+      keepCorrect &&
+      (feedback === 4 || feedback === '4a' || feedback === 5 || feedback === '5a')
+    ) {
+      const newGuess = Array(slots)
+        .fill(null)
+        .map((_, index) => {
+          if (guessResults[index].status === 'correct') {
+            return currentGuess[index];
+          }
+          return null;
+        });
+      setCurrentGuess(newGuess);
+    } else {
+      setCurrentGuess(Array(slots).fill(null));
+    }
     setGuessStartTime(currentTime);
   };
 
