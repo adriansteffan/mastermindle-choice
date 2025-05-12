@@ -181,7 +181,7 @@ const experiment = subsetExperimentByParam([
     },
   },
   {
-    name: 'MasterMindleSettings',
+    name: 'ColorBlindSettings',
     type: 'StoreUI',
 
     props: {
@@ -414,6 +414,10 @@ const experiment = subsetExperimentByParam([
           {
             filename: `_SETTINGS__${Date.now()}`,
             trials: ['MasterMindleSettings'],
+          },
+          {
+            filename: `_COLORBLIND__${Date.now()}`,
+            trials: ['ColorBlindSettings'],
           },
         ],
       },

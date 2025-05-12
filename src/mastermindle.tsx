@@ -401,8 +401,8 @@ export function MasterMindle({
   const useTwoColumnLayout = availableColors.length > 6;
 
   return (
-    <div className='min-h-screen w-full bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]'>
-      <div className='p-4 pt-20 lg:pt-24 max-w-7xl min-h-full w-fit mx-auto flex flex-col lg:flex-row xl:gap-x-0 lg:gap-x-6 justify-between lg:justify-center'>
+    <div className='h-screen w-full bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]'>
+      <div className='p-4 pt-12 pb-10 lg:pt-24 max-w-7xl h-full w-fit mx-auto flex flex-col lg:flex-row xl:gap-x-0 lg:gap-x-6 justify-between lg:justify-center'>
         {/* Action Buttons */}
         <div className='flex gap-6 xl:w-56 xl:px-12 lg:p-4 flex-row justify-center lg:justify-start lg:flex-col mt-10 lg:mt-0 sm:pb-4 lg:mb-0'>
           {!roundOver && (
@@ -440,8 +440,8 @@ export function MasterMindle({
         </div>
 
         {/* Gameboard */}
-        <div className='flex flex-col justify-between order-first items-center lg:order-none min-h-0'>
-          <div className='space-y-4 -mt-8 sm:mt-0 lg:space-y-8 flex-1'>
+        <div className='flex flex-col lg:h-full flex-1 justify-between order-first items-center lg:order-none'>
+        <div className='space-y-4 -mt-8 sm:mt-0 lg:space-y-8 flex flex-col h-full'>
             {/* Timer */}
             <div className='flex justify-center items-center gap-6'>
               <div className='text-lg text-center sm:text-2xl font-bold w-20'>
@@ -533,7 +533,7 @@ export function MasterMindle({
             {/* Previous Guesses */}
             <div
               ref={guessesContainerRef}
-              className='space-y-8 md:p-4 lg:p-8 border-gray-400 h-[25vh] lg:h-[40vh] overflow-y-auto'
+              className='space-y-8 md:p-4 lg:p-8 border-gray-400 h-[40vh] sm:h-[25vh] overflow-y-auto lg:flex-1'
             >
               {previousGuesses.map((guess, rowNum) => (
                 <div
