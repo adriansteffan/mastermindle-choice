@@ -187,7 +187,7 @@ const experiment = subsetExperimentByParam([
   },
   {
     type: 'Text',
-    props: {
+    props: (_data: any, store: any) => ({
       buttonText: 'Start',
       content: (
         <>
@@ -198,10 +198,10 @@ const experiment = subsetExperimentByParam([
             an empty array. To assemble a guess, choose a color on the right and then click the
             empty spots in the middle of the board (each color can be used multiple times). You will
             then receive feedback on whether your guess was correct or, if not, which positions are
-            correct (✓), which are incorrect (X), and which have a correct colour which is found in
+            correct {!store.colorblind ? "(fully colored orb)" : "(✓)"}, which are incorrect (X), and which have a correct colour which is found in
             another spot (C). For example:
           </p>
-          <img className='my-10 w-96 mx-auto' src='/5.png' />
+          <img className='my-10 w-96 mx-auto' src={store.colorblind ? '/5.png' : '/5plain.png'} />
           <p>
             Each game round has a specific code to be guessed and you will be allowed to take a
             maximum of {GUESSES} guesses, which you will be able to verify using the “CHECK” button;
@@ -215,7 +215,7 @@ const experiment = subsetExperimentByParam([
           </p>
         </>
       ),
-    },
+    }),
   },
   {
     name: 'MasterMindlePractice1',
