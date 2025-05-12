@@ -32,8 +32,8 @@ const DEFAULT_COLORS = getParam(
 );
 const DEFAULT_SLOTS = getParam('starting_slots', -1, 'number', 'Initial slots, random if not set');
 
-const STARTING_COLORS = DEFAULT_COLORS === -1 ? [3, 4, 5, 6].sample(1)[0] : DEFAULT_COLORS;
-const STARTING_SLOTS = DEFAULT_SLOTS === -1 ? [3, 4, 5, 6].sample(1)[0] : DEFAULT_SLOTS;
+const STARTING_COLORS = DEFAULT_COLORS === -1 ? [3].sample(1)[0] : DEFAULT_COLORS;
+const STARTING_SLOTS = DEFAULT_SLOTS === -1 ? [3].sample(1)[0] : DEFAULT_SLOTS;
 
 const FEEDBACK_TYPE = getParam('feedback', 5, 'number', 'Feedbacktype, default is Wordle type');
 
