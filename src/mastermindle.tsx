@@ -418,13 +418,13 @@ useEffect(() => {
             {/* Current Guess Slots */}
             <div className='py-5 sm:py-10 md:p-10 rounded-lg'>
               <div className='flex flex-col gap-8 items-center'>
-                {Array.from({ length: Math.ceil(slots / slotsPerRow) }).map((_, rowIndex) => {
-  const startIndex = rowIndex * slotsPerRow;
-  const endIndex = Math.min(startIndex + slotsPerRow, slots);
+              {Array.from({ length: Math.ceil(slots / slotsPerRow) }).map((_, rowIndex) => {
+                  const isSingleDisplayRow = Math.ceil(slots / slotsPerRow) === 1;
+                  const startIndex = rowIndex * slotsPerRow;
+                  const endIndex = Math.min(startIndex + slotsPerRow, slots);
                   const sourceArray = roundOver ? solution : currentGuess;
                   const rowSlots = sourceArray.slice(startIndex, endIndex);
                   const N = rowSlots.length;
-                  const numPlaceholders = 4 - N;
 
                   let lineElement: any = null;
                   if (N > 1) {
@@ -448,7 +448,14 @@ useEffect(() => {
                   }
 
                   return (
-                    <div key={`row-${rowIndex}`} className='grid grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-8 relative w-fit mx-auto'>
+                    <div
+                      key={`row-${rowIndex}`}
+                      className={`${
+                        isSingleDisplayRow && N < slotsPerRow && N > 0
+                          ? 'flex justify-center' 
+                          : 'grid grid-cols-4 lg:grid-cols-6' 
+                      } gap-4 sm:gap-8 relative w-fit mx-auto`}
+                    >
                       {lineElement}
 
                       {rowSlots.map((color: ColorKey | null, localIndex: number) => {
@@ -503,13 +510,7 @@ useEffect(() => {
                         );
                       })}
 
-                      {Array.from({ length: numPlaceholders }).map((_, placeholderIndex) => (
-                        <div
-                          key={`placeholder-${rowIndex}-${placeholderIndex}`}
-                          className={`invisible ${screenWidth >= 600 ? 'h-24 w-24' : 'h-16 w-16'}`}
-                          aria-hidden='true'
-                        ></div>
-                      ))}
+                      
                     </div>
                   );
                 })}
@@ -530,50 +531,56 @@ useEffect(() => {
 
                   <div className='sm:hidden w-full text-center text-xl mb-2'>{rowNum + 1}</div>
 
-                  <div className='grid grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-y-2 sm:gap-x-4'>
-                    {guess.colors.map((color, index) => (
-                      <div key={index} className='flex flex-col items-center'>
-                        <ColorOrb key={index} color={color} size={12} />
-                        {(feedback == '4a' || feedback == 4) && (
-                          <span>
-                            {guess.results[index].status === 'correct' && '✓'}
-                            {guess.results[index].status !== 'correct' && <>&nbsp;</>}
-                          </span>
-                        )}
-                        {feedback == 5 && (
-                          <span>
-                            {guess.results[index].status === 'correct' && '✓'}
-                            {guess.results[index].status === 'incorrect' && '✗'}
-                            {guess.results[index].status === 'wrong-position' &&
-                              (() => {
-                                const remainingInSolution = solution.filter(
-                                  (color, i) =>
-                                    color === guess.results[index].color &&
-                                    guess.results[i].status !== 'correct',
-                                ).length;
-
-                                const usedCCount = guess.results
-                                  .slice(0, index)
-                                  .filter(
-                                    (r) =>
-                                      r.status === 'wrong-position' &&
-                                      r.color === guess.results[index].color,
+                  <div
+                    className={`${
+                      guess.colors.length < slotsPerRow && guess.colors.length > 0
+                        ? 'flex justify-center'
+                        : 'grid grid-cols-4 lg:grid-cols-6' 
+                    } gap-2 sm:gap-x-4 sm:gap-y-2`} 
+                  >
+                    {guess.colors.map((color, index) => {
+                      return (
+                        <div key={index} className='flex flex-col items-center'>
+                          <ColorOrb color={color} size={12} />
+                          {(feedback == '4a' || feedback == 4) && (
+                            <span>
+                              {guess.results[index].status === 'correct' && '✓'}
+                              {guess.results[index].status !== 'correct' && <>&nbsp;</>}
+                            </span>
+                          )}
+                          {feedback == 5 && (
+                            <span>
+                              {guess.results[index].status === 'correct' && '✓'}
+                              {guess.results[index].status === 'incorrect' && '✗'}
+                              {guess.results[index].status === 'wrong-position' &&
+                                (() => {
+                                  const remainingInSolution = solution.filter(
+                                    (sColor, i) =>
+                                      sColor === guess.results[index].color &&
+                                      guess.results[i].status !== 'correct',
                                   ).length;
-
-                                return usedCCount < remainingInSolution ? 'C' : '✗';
-                              })()}
-                          </span>
-                        )}
-                        {feedback == '5a' && (
-                          <span>
-                            {guess.results[index].status == 'correct' && '✓'}
-                            {guess.results[index].status == 'incorrect' && '✗'}
-                            {guess.results[index].status == 'wrong-position' && 'C'}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                                  const usedCCount = guess.results
+                                    .slice(0, index)
+                                    .filter(
+                                      (r) =>
+                                        r.status === 'wrong-position' &&
+                                        r.color === guess.results[index].color,
+                                    ).length;
+                                  return usedCCount < remainingInSolution ? 'C' : '✗';
+                                })()}
+                            </span>
+                          )}
+                          {feedback == '5a' && (
+                            <span>
+                              {guess.results[index].status == 'correct' && '✓'}
+                              {guess.results[index].status == 'incorrect' && '✗'}
+                              {guess.results[index].status == 'wrong-position' && 'C'}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                   </div>
 
                   {/* Feedback display */}
                   <div className='flex items-center gap-4 text-lg sm:ml-6 sm:self-center'>
