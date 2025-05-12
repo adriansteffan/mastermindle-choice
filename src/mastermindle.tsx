@@ -157,6 +157,18 @@ export function MasterMindle({
 
   const warningShownRef = useRef(false);
 
+  const [slotsPerRow, setSlotsPerRow] = useState(4);
+
+useEffect(() => {
+  const handleResize = () => {
+    setSlotsPerRow(window.matchMedia('(min-width: 1024px)').matches ? 6 : 4);
+  };
+  
+  handleResize(); // Initial call
+  window.addEventListener('resize', handleResize);
+  return () => window.removeEventListener('resize', handleResize);
+}, []);
+
   // Reset the current guess when slots change
   useEffect(() => {
     setCurrentGuess(Array(slots).fill(null));
@@ -356,7 +368,7 @@ export function MasterMindle({
 
   return (
     <div className='min-h-screen w-full bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]'>
-      <div className='p-4 pt-20 lg:pt-24 max-w-7xl min-h-full w-fit mx-auto flex flex-col lg:flex-row xl:gap-x-12 lg:gap-x-8 justify-between lg:justify-center'>
+      <div className='p-4 pt-20 lg:pt-24 max-w-7xl min-h-full w-fit mx-auto flex flex-col lg:flex-row xl:gap-x-0 lg:gap-x-6 justify-between lg:justify-center'>
         {/* Action Buttons */}
         <div className='flex gap-6 xl:w-56 xl:px-12 lg:p-4 flex-row justify-center lg:justify-start lg:flex-col mt-10 lg:mt-0 sm:pb-4 lg:mb-0'>
           {!roundOver && (
@@ -406,9 +418,9 @@ export function MasterMindle({
             {/* Current Guess Slots */}
             <div className='py-5 sm:py-10 md:p-10 rounded-lg'>
               <div className='flex flex-col gap-8 items-center'>
-                {Array.from({ length: Math.ceil(slots / 4) }).map((_, rowIndex) => {
-                  const startIndex = rowIndex * 4;
-                  const endIndex = Math.min(startIndex + 4, slots);
+                {Array.from({ length: Math.ceil(slots / slotsPerRow) }).map((_, rowIndex) => {
+  const startIndex = rowIndex * slotsPerRow;
+  const endIndex = Math.min(startIndex + slotsPerRow, slots);
                   const sourceArray = roundOver ? solution : currentGuess;
                   const rowSlots = sourceArray.slice(startIndex, endIndex);
                   const N = rowSlots.length;
@@ -436,10 +448,7 @@ export function MasterMindle({
                   }
 
                   return (
-                    <div
-                      key={`row-${rowIndex}`}
-                      className='grid grid-cols-4 gap-4 sm:gap-8 relative w-fit mx-auto'
-                    >
+                    <div key={`row-${rowIndex}`} className='grid grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-8 relative w-fit mx-auto'>
                       {lineElement}
 
                       {rowSlots.map((color: ColorKey | null, localIndex: number) => {
@@ -521,7 +530,7 @@ export function MasterMindle({
 
                   <div className='sm:hidden w-full text-center text-xl mb-2'>{rowNum + 1}</div>
 
-                  <div className='grid grid-cols-4 gap-2 sm:gap-4'>
+                  <div className='grid grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-y-2 sm:gap-x-4'>
                     {guess.colors.map((color, index) => (
                       <div key={index} className='flex flex-col items-center'>
                         <ColorOrb key={index} color={color} size={12} />
@@ -674,7 +683,7 @@ export function MasterMindle({
         {/* Right Side - Color Selection */}
         <div
           className={`
-        xl:px-8 flex flex-row mt-2 md:mt-0 justify-center gap-x-2 sm:gap-x-8 lg:justify-start max-w-dvw
+        xl:px-7 flex flex-row mt-2 md:mt-0 justify-center gap-x-2 sm:gap-x-8 lg:justify-start max-w-dvw
         ${
           useTwoColumnLayout
             ? 'grid grid-cols-6 gap-y-4 lg:grid lg:grid-cols-2 lg:gap-y-10 lg:h-fit'
