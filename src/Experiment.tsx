@@ -22,6 +22,19 @@ const PRACTICE_TIME = getParam(
   'The time limit for each of the practice runs',
 );
 
+const FEEDBACK_INSIDE = getParam(
+  'feedback_inside',
+  false,
+  'boolean',
+  'Should the feedback symbol be shown inside?',
+);
+const LETTERS_ON_GUESSES = getParam(
+  'letters_on_guesses',
+  true,
+  'boolean',
+  'Should letters be displayed on the guessing slots?s',
+);
+
 const GUESSES = getParam('guesses', 10, 'number', 'The number of guesses the participants get');
 
 const DEFAULT_COLORS = getParam(
@@ -168,6 +181,24 @@ const experiment = subsetExperimentByParam([
     },
   },
   {
+    name: 'MasterMindleSettings',
+    type: 'StoreUI',
+
+    props: {
+      title: 'One thing before we start:',
+      description:
+        'This game contains colored orbs. If you have trouble telling colors apart, you can check the toggle below to enable helping letters and symbols. This will add some elements to the interface and make it a bit more crowded, but it will help you with telling apart the orbs.',
+      fields: [
+        {
+          type: 'boolean',
+          storeKey: 'colorblind',
+          label: 'Activate additional color identifiers?',
+          defaultValue: false,
+        },
+      ],
+    },
+  },
+  {
     type: 'Text',
     props: {
       buttonText: 'Start',
@@ -202,13 +233,15 @@ const experiment = subsetExperimentByParam([
   {
     name: 'MasterMindlePractice1',
     type: 'MasterMindle',
-    props: {
+    props: (_data: any, store: any) => ({
       feedback: FEEDBACK_TYPE,
+      hideLetters: !store.colorblind,
+      feedbackInside: !store.colorblind,
       timelimit: PRACTICE_TIME,
       slots: PRACTICE_SLOTS_1,
       colors: PRACTICE_COLORS_1,
       maxGuesses: GUESSES,
-    },
+    }),
   },
   {
     type: 'Text',
@@ -230,13 +263,15 @@ const experiment = subsetExperimentByParam([
   {
     name: 'MasterMindlePractice2',
     type: 'MasterMindle',
-    props: {
+    props: (_data: any, store: any) => ({
       feedback: FEEDBACK_TYPE,
+      hideLetters: !store.colorblind,
+      feedbackInside: !store.colorblind,
       timelimit: PRACTICE_TIME,
       slots: PRACTICE_SLOTS_2,
       colors: PRACTICE_COLORS_2,
       maxGuesses: GUESSES,
-    },
+    }),
   },
   {
     type: 'Text',
@@ -275,6 +310,8 @@ const experiment = subsetExperimentByParam([
         type: 'MasterMindle',
         props: (_data: any, store: any) => ({
           feedback: FEEDBACK_TYPE,
+          hideLetters: !store.colorblind,
+          feedbackInside: !store.colorblind,
           timelimit: store.mastermindle_timelimit,
           slots: store.mastermindle_slots,
           colors: store.mastermindle_colors,

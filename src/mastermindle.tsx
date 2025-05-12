@@ -36,6 +36,21 @@ type GuessResult = {
   status: 'correct' | 'wrong-position' | 'incorrect';
 };
 
+interface ColorOrbProps {
+  color: ColorKey;
+  /** Size in Tailwind units (8-32). Defaults to 12 */
+  size?: Size;
+  interactive?: boolean;
+  pressed?: boolean;
+  hoverborder?: boolean;
+  onClick?: () => void;
+  hideLetter?: boolean;
+  // Add new feedback prop
+  feedback?: 'correct' | 'incorrect' | 'wrong-position' | null;
+  // Add feedbackInside prop
+  feedbackInside?: boolean;
+}
+
 const ColorOrb: React.FC<ColorOrbProps> = ({
   color,
   size = 12,
@@ -43,8 +58,23 @@ const ColorOrb: React.FC<ColorOrbProps> = ({
   hoverborder = false,
   pressed = false,
   onClick,
+  hideLetter = false,
+  feedback = null,
+  feedbackInside = true,
 }) => {
-  const letter = color === 'grey' ? '?' : color[0].toUpperCase();
+  // Determine what to display inside the orb
+  const getInnerContent = () => {
+    if (feedbackInside && feedback) {
+      if (feedback === 'correct') return '';
+      if (feedback === 'incorrect') return '✗';
+      if (feedback === 'wrong-position') return 'C';
+    }
+
+    // Default letter display
+    return color === 'grey' ? '?' : (hideLetter ? "" : color[0].toUpperCase());
+  };
+
+  const letter = getInnerContent();
 
   const sizeClasses = {
     8: 'h-8 w-8 text-sm',
@@ -130,7 +160,9 @@ export function MasterMindle({
   maxGuesses,
   slots = 4,
   colors = 4,
+  hideLetters = false,
   keepCorrect = true,
+  feedbackInside = false,
 }: {
   feedback: Feedback;
   timelimit: number;
@@ -138,7 +170,9 @@ export function MasterMindle({
   maxGuesses: number;
   slots?: number;
   colors?: number;
+  hideLetters?: boolean;
   keepCorrect?: boolean;
+  feedbackInside?: boolean;
 } & BaseComponentProps) {
   // Get available colors (excluding grey)
   const availableColors = Object.keys(COLORS)
@@ -159,15 +193,15 @@ export function MasterMindle({
 
   const [slotsPerRow, setSlotsPerRow] = useState(4);
 
-useEffect(() => {
-  const handleResize = () => {
-    setSlotsPerRow(window.matchMedia('(min-width: 1024px)').matches ? 6 : 4);
-  };
-  
-  handleResize(); // Initial call
-  window.addEventListener('resize', handleResize);
-  return () => window.removeEventListener('resize', handleResize);
-}, []);
+  useEffect(() => {
+    const handleResize = () => {
+      setSlotsPerRow(window.matchMedia('(min-width: 1024px)').matches ? 6 : 4);
+    };
+
+    handleResize(); // Initial call
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Reset the current guess when slots change
   useEffect(() => {
@@ -418,7 +452,7 @@ useEffect(() => {
             {/* Current Guess Slots */}
             <div className='py-5 sm:py-10 md:p-10 rounded-lg'>
               <div className='flex flex-col gap-8 items-center'>
-              {Array.from({ length: Math.ceil(slots / slotsPerRow) }).map((_, rowIndex) => {
+                {Array.from({ length: Math.ceil(slots / slotsPerRow) }).map((_, rowIndex) => {
                   const isSingleDisplayRow = Math.ceil(slots / slotsPerRow) === 1;
                   const startIndex = rowIndex * slotsPerRow;
                   const endIndex = Math.min(startIndex + slotsPerRow, slots);
@@ -426,37 +460,17 @@ useEffect(() => {
                   const rowSlots = sourceArray.slice(startIndex, endIndex);
                   const N = rowSlots.length;
 
-                  let lineElement: any = null;
-                  if (N > 1) {
-                    const totalColumns = 4;
-
-                    const startOffsetPercent = (1 / (totalColumns * 2)) * 100;
-
-                    const widthPercent = ((N - 1) / totalColumns) * 100;
-
-                    lineElement = (
-                      <div
-                        className='absolute top-1/2 h-1 bg-gray-300 -z-10'
-                        style={{
-                          left: `${startOffsetPercent}%`,
-                          width: `${widthPercent}%`,
-                          transform: 'translateY(-50%)',
-                        }}
-                        aria-hidden='true'
-                      />
-                    );
-                  }
 
                   return (
                     <div
                       key={`row-${rowIndex}`}
                       className={`${
                         isSingleDisplayRow && N < slotsPerRow && N > 0
-                          ? 'flex justify-center' 
-                          : 'grid grid-cols-4 lg:grid-cols-6' 
+                          ? 'flex justify-center'
+                          : 'grid grid-cols-4 lg:grid-cols-6'
                       } gap-4 sm:gap-8 relative w-fit mx-auto`}
                     >
-                      {lineElement}
+                      
 
                       {rowSlots.map((color: ColorKey | null, localIndex: number) => {
                         const globalIndex = startIndex + localIndex;
@@ -464,6 +478,7 @@ useEffect(() => {
                           <ColorOrb
                             key={globalIndex}
                             color={color ?? 'grey'}
+                            hideLetter={hideLetters}
                             size={screenWidth >= 600 ? 24 : 16}
                             hoverborder={
                               !roundOver && (selectedColor != null || (!!color && color !== 'grey'))
@@ -509,8 +524,6 @@ useEffect(() => {
                           />
                         );
                       })}
-
-                      
                     </div>
                   );
                 })}
@@ -535,52 +548,96 @@ useEffect(() => {
                     className={`${
                       guess.colors.length < slotsPerRow && guess.colors.length > 0
                         ? 'flex justify-center'
-                        : 'grid grid-cols-4 lg:grid-cols-6' 
-                    } gap-2 sm:gap-x-4 sm:gap-y-2`} 
+                        : 'grid grid-cols-4 lg:grid-cols-6'
+                    } gap-2 sm:gap-x-4 sm:gap-y-2`}
                   >
                     {guess.colors.map((color, index) => {
+                      // Determine feedback status based on the feedback type
+                      let feedbackStatus: null | string = null;
+
+                      if (feedback === '4a' || feedback === 4) {
+                        if (guess.results[index].status === 'correct') {
+                          feedbackStatus = 'correct';
+                        }
+                      } else if (feedback === 5) {
+                        feedbackStatus = guess.results[index].status;
+
+                        // Special case for wrong-position in feedback type 5
+                        if (feedbackStatus === 'wrong-position') {
+                          const remainingInSolution = solution.filter(
+                            (sColor, i) =>
+                              sColor === guess.results[index].color &&
+                              guess.results[i].status !== 'correct',
+                          ).length;
+                          const usedCCount = guess.results
+                            .slice(0, index)
+                            .filter(
+                              (r) =>
+                                r.status === 'wrong-position' &&
+                                r.color === guess.results[index].color,
+                            ).length;
+
+                          if (usedCCount >= remainingInSolution) {
+                            feedbackStatus = 'incorrect';
+                          }
+                        }
+                      } else if (feedback === '5a') {
+                        feedbackStatus = guess.results[index].status;
+                      }
+
                       return (
                         <div key={index} className='flex flex-col items-center'>
-                          <ColorOrb color={color} size={12} />
-                          {(feedback == '4a' || feedback == 4) && (
-                            <span>
-                              {guess.results[index].status === 'correct' && '✓'}
-                              {guess.results[index].status !== 'correct' && <>&nbsp;</>}
-                            </span>
-                          )}
-                          {feedback == 5 && (
-                            <span>
-                              {guess.results[index].status === 'correct' && '✓'}
-                              {guess.results[index].status === 'incorrect' && '✗'}
-                              {guess.results[index].status === 'wrong-position' &&
-                                (() => {
-                                  const remainingInSolution = solution.filter(
-                                    (sColor, i) =>
-                                      sColor === guess.results[index].color &&
-                                      guess.results[i].status !== 'correct',
-                                  ).length;
-                                  const usedCCount = guess.results
-                                    .slice(0, index)
-                                    .filter(
-                                      (r) =>
-                                        r.status === 'wrong-position' &&
-                                        r.color === guess.results[index].color,
-                                    ).length;
-                                  return usedCCount < remainingInSolution ? 'C' : '✗';
-                                })()}
-                            </span>
-                          )}
-                          {feedback == '5a' && (
-                            <span>
-                              {guess.results[index].status == 'correct' && '✓'}
-                              {guess.results[index].status == 'incorrect' && '✗'}
-                              {guess.results[index].status == 'wrong-position' && 'C'}
-                            </span>
+                          <ColorOrb
+                            color={color}
+                            size={12}
+                            feedback={feedbackStatus as any}
+                            feedbackInside={feedbackInside}
+                          />
+
+                          {/* Only show feedback below if feedbackInside is false */}
+                          {!feedbackInside && (
+                            <>
+                              {(feedback === '4a' || feedback === 4) && (
+                                <span>
+                                  {guess.results[index].status === 'correct' && '✓'}
+                                  {guess.results[index].status !== 'correct' && <>&nbsp;</>}
+                                </span>
+                              )}
+                              {feedback === 5 && (
+                                <span>
+                                  {guess.results[index].status === 'correct' && '✓'}
+                                  {guess.results[index].status === 'incorrect' && '✗'}
+                                  {guess.results[index].status === 'wrong-position' &&
+                                    (() => {
+                                      const remainingInSolution = solution.filter(
+                                        (sColor, i) =>
+                                          sColor === guess.results[index].color &&
+                                          guess.results[i].status !== 'correct',
+                                      ).length;
+                                      const usedCCount = guess.results
+                                        .slice(0, index)
+                                        .filter(
+                                          (r) =>
+                                            r.status === 'wrong-position' &&
+                                            r.color === guess.results[index].color,
+                                        ).length;
+                                      return usedCCount < remainingInSolution ? 'C' : '✗';
+                                    })()}
+                                </span>
+                              )}
+                              {feedback === '5a' && (
+                                <span>
+                                  {guess.results[index].status === 'correct' && '✓'}
+                                  {guess.results[index].status === 'incorrect' && '✗'}
+                                  {guess.results[index].status === 'wrong-position' && 'C'}
+                                </span>
+                              )}
+                            </>
                           )}
                         </div>
                       );
                     })}
-                   </div>
+                  </div>
 
                   {/* Feedback display */}
                   <div className='flex items-center gap-4 text-lg sm:ml-6 sm:self-center'>
