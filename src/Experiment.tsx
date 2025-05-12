@@ -22,19 +22,6 @@ const PRACTICE_TIME = getParam(
   'The time limit for each of the practice runs',
 );
 
-const FEEDBACK_INSIDE = getParam(
-  'feedback_inside',
-  false,
-  'boolean',
-  'Should the feedback symbol be shown inside?',
-);
-const LETTERS_ON_GUESSES = getParam(
-  'letters_on_guesses',
-  true,
-  'boolean',
-  'Should letters be displayed on the guessing slots?s',
-);
-
 const GUESSES = getParam('guesses', 10, 'number', 'The number of guesses the participants get');
 
 const DEFAULT_COLORS = getParam(
